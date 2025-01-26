@@ -6,6 +6,7 @@ import { Canvas } from '@react-three/fiber'
 import { LoadingScreen } from './components/LoadingScreen'
 import { MoneyTreeScene } from './components/MoneyTree'
 import { Notebook } from './components/Notebook'
+import { DisplacementPlot } from './components/DisplacementPlot'
 import './App.css'
 
 interface Coordinates {
@@ -83,7 +84,7 @@ function MainPage() {
         </div>
       </div>
       <div className="coordinates">
-        <h3>Current Position</h3>
+        <h3>Current Acceleration</h3>
         {coordinates.length > 0 && (
           <div>
             X: {coordinates[coordinates.length-1].X.toFixed(3)} | 
@@ -133,9 +134,15 @@ function ResultsPage() {
       <h1>Planting Results</h1>
       <div className="results-grid">
         <div className="result-card">
-          <h2>Your Path Map</h2>
+          <h2>Your Acceleration Path</h2>
           <div className="final-plot">
             <ScatterPlot coordinates={finalCoordinates} />
+          </div>
+        </div>
+        <div className="result-card">
+          <h2>Your Movement Path</h2>
+          <div className="final-plot">
+            <DisplacementPlot coordinates={finalCoordinates} />
           </div>
         </div>
         <div className="result-card">

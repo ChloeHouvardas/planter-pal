@@ -2,7 +2,7 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 
 app = Flask(__name__)
-CORS(app)  # Allow CORS for all routes, simpler than the previous configuration
+CORS(app)  # Allow CORS for all routes
 
 # Change to store coordinate history
 coordinate_history = []
