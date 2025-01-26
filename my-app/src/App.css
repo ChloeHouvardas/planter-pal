@@ -40,3 +40,66 @@
 .read-the-docs {
   color: #888;
 }
+
+.app {
+  background: linear-gradient(to bottom, #2c4a1d, #1a2e12);
+  min-height: 100vh;
+  padding: 20px;
+  color: #e8f5e9;
+  font-family: 'Helvetica Neue', Arial, sans-serif;
+}
+
+h1 {
+  color: #8bc34a;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.coordinates {
+  background-color: rgba(27, 45, 20, 0.8);
+  border-radius: 10px;
+  padding: 15px;
+  margin-top: 20px;
+  border: 1px solid #4caf50;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+}
+
+.content-wrapper {
+  display: flex;
+  gap: 20px;
+  align-items: stretch;
+  margin-bottom: 20px;
+}
+
+.plot-container {
+  flex: 2;
+  background-color: rgba(27, 45, 20, 0.8);
+  border-radius: 10px;
+  padding: 15px;
+  border: 1px solid #4caf50;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+}
+
+.tree-container {
+  flex: 1;
+  height: 500px;
+  min-width: 300px;
+  background-color: rgba(27, 45, 20, 0.8);
+  border-radius: 10px;
+  padding: 15px;
+  border: 1px solid #4caf50;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+}
+
+/* Add a subtle leaf pattern to the background */
+.app::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 30c4-8 2-16-4-16s-12 8-8 16 8 8 12 0zm0 0c-4 8-2 16 4 16s12-8 8-16-8-8-12 0' fill='%234caf50' fill-opacity='0.05'/%3E%3C/svg%3E");
+  z-index: -1;
+}
