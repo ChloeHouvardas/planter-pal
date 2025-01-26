@@ -262,7 +262,7 @@ function StoryTreePage() {
       <h1>Story Tree</h1>
       <div className="notebook-wrapper">
         <div className="notebook-container">
-          <Canvas camera={{ position: [0, 0, 10] }}>
+          <Canvas camera={{ position: [0, 0, 4] }}>
             <ambientLight intensity={0.7} />
             <directionalLight position={[10, 10, 5]} intensity={1} />
             <Notebook />
