@@ -28,9 +28,8 @@ function MainPage() {
   const navigate = useNavigate()
 
   useEffect(() => {
-    // Clear stored coordinates and server-side coordinates
+    // Only clear finalCoordinates, not the planting history
     localStorage.removeItem('finalCoordinates')
-    localStorage.removeItem('plantingHistory')
     
     // Clear server-side coordinates
     fetch('http://localhost:5000/clear', {
@@ -69,7 +68,10 @@ function MainPage() {
   return (
     <div className="app">
       <div className="logo-container">
-        <h1 className="logo-text">CANOPY</h1>
+        <h1 className="logo-text">
+          <span className="logo-text-arbo">Arbo</span>
+          <span className="logo-text-route">Route</span>
+        </h1>
       </div>
       <div className="content-wrapper">
         <div className="plot-container">
@@ -117,15 +119,37 @@ function ResultsPage() {
     if (storedCoordinates) {
       setFinalCoordinates(JSON.parse(storedCoordinates))
       
-      // Save this planting to history
+      // Save this planting to history while preserving existing entries
       const existingHistory = JSON.parse(localStorage.getItem('plantingHistory') || '[]')
-      const newRecord: PlantingRecord = {
-        id: Date.now(),
-        timestamp: new Date().toISOString(),
-        coordinates: JSON.parse(storedCoordinates),
-        rainbowColor: "#e74c3c" // You could randomize this if you want
+      // Only add new record if there are coordinates
+      if (JSON.parse(storedCoordinates).length > 0) {
+        const newRecord: PlantingRecord = {
+          id: Date.now(),
+          timestamp: new Date().toISOString(),
+          coordinates: JSON.parse(storedCoordinates),
+          rainbowColor: "#e74c3c"
+        }
+        // Preserve any default entries by checking if they exist
+        const updatedHistory = existingHistory.length === 0 ? 
+          [
+            {
+              id: 1,
+              timestamp: new Date("2024-01-26T10:00:00").toISOString(),
+              coordinates: generateSquarePath(),
+              rainbowColor: "#4CAF50"
+            },
+            {
+              id: 2,
+              timestamp: new Date("2024-01-26T15:30:00").toISOString(),
+              coordinates: generateOverlappingPath(),
+              rainbowColor: "#2196F3"
+            },
+            newRecord
+          ] :
+          [...existingHistory, newRecord]
+        
+        localStorage.setItem('plantingHistory', JSON.stringify(updatedHistory))
       }
-      localStorage.setItem('plantingHistory', JSON.stringify([...existingHistory, newRecord]))
     }
   }, [])
 
@@ -187,8 +211,95 @@ function TreeLegacyPage() {
   
   useEffect(() => {
     const history = JSON.parse(localStorage.getItem('plantingHistory') || '[]')
-    setPlantingHistory(history)
+    
+    // If no history exists, add default entries
+    if (history.length === 0) {
+      const defaultEntries: PlantingRecord[] = [
+        {
+          id: 1,
+          timestamp: new Date("2024-01-26T10:00:00").toISOString(),  // Today at 10 AM
+          coordinates: generateSquarePath(),
+          rainbowColor: "#4CAF50"
+        },
+        {
+          id: 2,
+          timestamp: new Date("2024-01-26T15:30:00").toISOString(),  // Today at 3:30 PM
+          coordinates: generateOverlappingPath(),
+          rainbowColor: "#2196F3"
+        }
+      ]
+      localStorage.setItem('plantingHistory', JSON.stringify(defaultEntries))
+      setPlantingHistory(defaultEntries)
+    } else {
+      setPlantingHistory(history)
+    }
   }, [])
+
+  // Generate a messy zigzag path with lots of points
+  function generateSquarePath(): Coordinates[] {
+    const path: Coordinates[] = []
+    const steps = 500  // More points for denser visualization
+
+    // Create a zigzag pattern with random variations
+    for (let i = 0; i < steps; i++) {
+      const noise = Math.random() * 0.03  // Increased noise
+      const verticalNoise = Math.random() * 0.02 - 0.01  // Random up/down movement
+      const direction = Math.floor(i / 50) % 2 === 0 ? 1 : -1  // Change direction every 50 points
+      
+      path.push({
+        X: (i * 0.1 + noise) * direction,
+        Y: verticalNoise + Math.sin(i * 0.3) * 0.02,
+        Z: (i * 0.08 + noise) * (direction * -1)  // Opposite direction for Z
+      })
+
+      // Add extra random points around the main path
+      if (Math.random() > 0.7) {  // 30% chance of extra points
+        const scatter = 0.05
+        path.push({
+          X: (i * 0.1 + Math.random() * scatter - scatter/2) * direction,
+          Y: verticalNoise + Math.random() * 0.02 - 0.01,
+          Z: (i * 0.08 + Math.random() * scatter - scatter/2) * (direction * -1)
+        })
+      }
+    }
+
+    return path
+  }
+
+  // Generate a chaotic circular path with clusters
+  function generateOverlappingPath(): Coordinates[] {
+    const path: Coordinates[] = []
+    const steps = 600  // More points
+    const scale = 0.15  // Larger scale
+
+    // Create main spiral pattern
+    for (let i = 0; i < steps; i++) {
+      const t = (i / steps) * Math.PI * 8
+      const radius = scale * (1 + Math.sin(t * 0.5) * 0.3)  // Varying radius
+      const noise = Math.random() * 0.02 - 0.01
+      
+      path.push({
+        X: Math.sin(t) * radius + noise,
+        Y: (Math.sin(t * 2) * 0.02) + noise,  // More vertical variation
+        Z: Math.cos(t) * radius + noise
+      })
+
+      // Add clusters of points randomly
+      if (Math.random() > 0.8) {  // 20% chance of clusters
+        const clusterSize = Math.floor(Math.random() * 5) + 3
+        for (let j = 0; j < clusterSize; j++) {
+          const clusterNoise = 0.03
+          path.push({
+            X: Math.sin(t) * radius + (Math.random() * clusterNoise - clusterNoise/2),
+            Y: (Math.sin(t * 2) * 0.02) + (Math.random() * clusterNoise - clusterNoise/2),
+            Z: Math.cos(t) * radius + (Math.random() * clusterNoise - clusterNoise/2)
+          })
+        }
+      }
+    }
+
+    return path
+  }
 
   const handleDelete = (id: number) => {
     // Filter out the deleted record
@@ -220,6 +331,9 @@ function TreeLegacyPage() {
             <div className="legacy-map">
               <div className="final-plot">
                 <ScatterPlot coordinates={record.coordinates} />
+              </div>
+              <div className="final-plot">
+                <DisplacementPlot coordinates={record.coordinates} />
               </div>
             </div>
             <div className="legacy-trees">

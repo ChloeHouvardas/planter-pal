@@ -1,21 +1,4 @@
-import { Scatter } from 'react-chartjs-2'
-import {
-  Chart as ChartJS,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Tooltip,
-  Legend,
-  ChartOptions
-} from 'chart.js'
-
-ChartJS.register(
-  LinearScale,
-  PointElement,
-  LineElement,
-  Tooltip,
-  Legend
-)
+import { useRef, useEffect } from 'react'
 
 interface Coordinates {
   X: number
@@ -90,94 +73,79 @@ function calculateDisplacement(accelerations: Coordinates[]): Coordinates[] {
 }
 
 export function DisplacementPlot({ coordinates }: DisplacementPlotProps) {
+  const svgRef = useRef<SVGSVGElement>(null)
   const displacements = calculateDisplacement(coordinates)
 
-  const data = {
-    datasets: [
-      {
-        label: 'Movement Path',
-        data: displacements.map(coord => ({ x: coord.X, y: coord.Z })), // Using X and Z for top-down view
-        backgroundColor: '#E8F3E8',
-        borderColor: '#66A182',
-        pointRadius: 3,
-        pointHoverRadius: 5,
-        showLine: true, // This will connect the points
-        fill: false,
-        borderWidth: 2,
-        tension: 0, // Remove curve to show actual path
-      }
-    ]
-  }
+  useEffect(() => {
+    if (!svgRef.current) return
 
-  const options: ChartOptions<'scatter'> = {
-    responsive: true,
-    maintainAspectRatio: false,
-    scales: {
-      x: {
-        grid: {
-          color: 'rgba(232, 243, 232, 0.1)',
-        },
-        ticks: {
-          color: '#E8F3E8',
-        },
-        title: {
-          display: true,
-          text: 'Left/Right',
-          color: '#E8F3E8',
-          font: {
-            size: 14,
-          },
-        },
-        min: -5,
-        max: 5,
-      },
-      y: {
-        grid: {
-          color: 'rgba(232, 243, 232, 0.1)',
-        },
-        ticks: {
-          color: '#E8F3E8',
-        },
-        title: {
-          display: true,
-          text: 'Forward/Backward',
-          color: '#E8F3E8',
-          font: {
-            size: 14,
-          },
-        },
-        min: -5,
-        max: 5,
-      },
-    },
-    plugins: {
-      legend: {
-        display: false,
-      },
-      tooltip: {
-        backgroundColor: 'rgba(47, 72, 88, 0.9)',
-        titleColor: '#E8F3E8',
-        bodyColor: '#E8F3E8',
-        borderColor: '#66A182',
-        borderWidth: 1,
-        padding: 10,
-        displayColors: false,
-        callbacks: {
-          label: (context) => {
-            const point = context.raw as { x: number; y: number }
-            return `Position: (${point.x.toFixed(2)}, ${point.y.toFixed(2)})`
-          },
-        },
-      },
-    },
-    animation: {
-      duration: 0
-    }
-  }
+    // Scale points to fit SVG viewport
+    const padding = 40
+    const width = svgRef.current.clientWidth - padding * 2
+    const height = svgRef.current.clientHeight - padding * 2
+
+    // Find min/max values
+    const xValues = displacements.map(p => p.X)
+    const zValues = displacements.map(p => p.Z)
+    const xMin = Math.min(...xValues)
+    const xMax = Math.max(...xValues)
+    const zMin = Math.min(...zValues)
+    const zMax = Math.max(...zValues)
+
+    // Scale factors
+    const xScale = width / (xMax - xMin || 1)
+    const zScale = height / (zMax - zMin || 1)
+
+    // Create path string
+    const pathData = displacements.map((point, i) => {
+      const x = (point.X - xMin) * xScale + padding
+      const y = (point.Z - zMin) * zScale + padding
+      return `${i === 0 ? 'M' : 'L'} ${x} ${y}`
+    }).join(' ')
+
+    // Update SVG elements
+    const svg = svgRef.current
+    svg.innerHTML = `
+      <g class="grid">
+        ${Array.from({ length: 11 }, (_, i) => {
+          const x = padding + (width * i) / 10
+          const y = padding + (height * i) / 10
+          return `
+            <line x1="${x}" y1="${padding}" x2="${x}" y2="${height + padding}" 
+                  stroke="rgba(232, 243, 232, 0.1)" />
+            <line x1="${padding}" y1="${y}" x2="${width + padding}" y2="${y}" 
+                  stroke="rgba(232, 243, 232, 0.1)" />
+          `
+        }).join('')}
+      </g>
+      <g class="axes">
+        <line x1="${padding}" y1="${height + padding}" x2="${width + padding}" y2="${height + padding}" 
+              stroke="#E8F3E8" />
+        <line x1="${padding}" y1="${padding}" x2="${padding}" y2="${height + padding}" 
+              stroke="#E8F3E8" />
+        <text x="${width + padding - 50}" y="${height + padding + 20}" 
+              fill="#E8F3E8">Left/Right</text>
+        <text x="${padding - 30}" y="${padding + 20}" transform="rotate(-90 ${padding - 30} ${padding + 20})" 
+              fill="#E8F3E8">Forward/Back</text>
+      </g>
+      <path d="${pathData}" stroke="#66A182" stroke-width="2" fill="none" />
+      ${displacements.map((point, i) => {
+        const x = (point.X - xMin) * xScale + padding
+        const y = (point.Z - zMin) * zScale + padding
+        return `<circle cx="${x}" cy="${y}" r="3" fill="#E8F3E8" />`
+      }).join('')}
+    `
+  }, [displacements])
 
   return (
-    <div style={{ width: '100%', height: '100%', padding: '1rem' }}>
-      <Scatter data={data} options={options} />
-    </div>
+    <svg
+      ref={svgRef}
+      style={{
+        width: '100%',
+        height: '100%',
+        background: 'rgba(0, 0, 0, 0.2)',
+        borderRadius: '8px'
+      }}
+    />
   )
 } 
