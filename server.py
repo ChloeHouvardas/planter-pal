@@ -7,6 +7,11 @@ CORS(app)  # Allow CORS for all routes, simpler than the previous configuration
 # Change to store coordinate history
 coordinate_history = []
 
+# TODO add a planting score endpoint
+# The colour of the tree is based on the planting score 
+
+# TODO add tree performance AI analysis
+
 @app.route('/coordinates', methods=['GET'])
 def get_coordinates():
     print("Coordinates requested:", coordinate_history)
