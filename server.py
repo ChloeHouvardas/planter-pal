@@ -1,13 +1,25 @@
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app)  # Allow CORS for all routes, simpler than the previous configuration
+
+# Change to store coordinate history
+coordinate_history = []
+
+@app.route('/coordinates', methods=['GET'])
+def get_coordinates():
+    print("Coordinates requested:", coordinate_history)
+    return jsonify(coordinate_history)
 
 @app.route('/data', methods=['POST'])
 def receive_data():
     try:
-        # Parse incoming JSON data
         data = request.get_json()
         print(f"Received data: {data}")
+        
+        # Add new coordinates to history
+        coordinate_history.append(data)
 
         # Extract Y value
         y_value = data.get("Y", 0)
@@ -26,4 +38,4 @@ def receive_data():
         return jsonify({"action": "no_buzz"}), 500
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
+    app.run(host="0.0.0.0", port=5000, debug=True)  # Added debug=True for better error messages
