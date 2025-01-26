@@ -31,7 +31,7 @@ function App() {
 
   return (
     <div className="app">
-      <h1>🌲 Forest Path Tracker 🌲</h1>
+      <h1>Forest Path Tracker</h1>
       <div className="content-wrapper">
         <div className="plot-container">
           <ScatterPlot coordinates={coordinates} />
@@ -45,12 +45,12 @@ function App() {
         </div>
       </div>
       <div className="coordinates">
-        <h3>🍃 Current Position</h3>
+        <h3>Current Position</h3>
         {coordinates.length > 0 && (
           <div>
-            X: {coordinates[coordinates.length-1].X.toFixed(2)}, 
-            Y: {coordinates[coordinates.length-1].Y.toFixed(2)}, 
-            Z: {coordinates[coordinates.length-1].Z.toFixed(2)}
+            X: {coordinates[coordinates.length-1].X.toFixed(3)} | 
+            Y: {coordinates[coordinates.length-1].Y.toFixed(3)} | 
+            Z: {coordinates[coordinates.length-1].Z.toFixed(3)}
           </div>
         )}
       </div>

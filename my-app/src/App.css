@@ -1,8 +1,15 @@
+:root {
+  --primary-color: #2F4858;
+  --accent-color: #66A182;
+  --text-color: #E8F3E8;
+  --border-color: rgba(102, 161, 130, 0.3);
+  --container-bg: rgba(47, 72, 88, 0.85);
+}
+
 #root {
-  max-width: 1280px;
+  max-width: 1440px;
   margin: 0 auto;
   padding: 2rem;
-  text-align: center;
 }
 
 .logo {
@@ -42,64 +49,137 @@
 }
 
 .app {
-  background: linear-gradient(to bottom, #2c4a1d, #1a2e12);
+  background: linear-gradient(135deg, #2F4858, #1B2B35);
   min-height: 100vh;
-  padding: 20px;
-  color: #e8f5e9;
-  font-family: 'Helvetica Neue', Arial, sans-serif;
+  padding: 2rem;
+  color: var(--text-color);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  position: relative;
 }
 
 h1 {
-  color: #8bc34a;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+  color: var(--accent-color);
+  font-size: 2.5rem;
+  font-weight: 700;
   text-align: center;
-  margin-bottom: 30px;
-}
-
-.coordinates {
-  background-color: rgba(27, 45, 20, 0.8);
-  border-radius: 10px;
-  padding: 15px;
-  margin-top: 20px;
-  border: 1px solid #4caf50;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+  margin-bottom: 2rem;
+  letter-spacing: -0.5px;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .content-wrapper {
   display: flex;
-  gap: 20px;
+  gap: 2rem;
   align-items: stretch;
-  margin-bottom: 20px;
+  margin-bottom: 2rem;
+  backdrop-filter: blur(10px);
 }
 
 .plot-container {
   flex: 2;
-  background-color: rgba(27, 45, 20, 0.8);
-  border-radius: 10px;
-  padding: 15px;
-  border: 1px solid #4caf50;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+  background: var(--container-bg);
+  border-radius: 16px;
+  padding: 1.5rem;
+  border: 1px solid var(--border-color);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+  backdrop-filter: blur(8px);
+  transition: all 0.3s ease;
+}
+
+.plot-container:hover {
+  transform: translateY(-2px);
+  border-color: var(--accent-color);
 }
 
 .tree-container {
   flex: 1;
   height: 500px;
   min-width: 300px;
-  background-color: rgba(27, 45, 20, 0.8);
-  border-radius: 10px;
-  padding: 15px;
-  border: 1px solid #4caf50;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+  background: transparent;
+  border-radius: 16px;
+  padding: 1.5rem;
+  border: 1px solid var(--border-color);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+  transition: all 0.3s ease;
 }
 
-/* Add a subtle leaf pattern to the background */
-.app::before {
-  content: '';
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 30c4-8 2-16-4-16s-12 8-8 16 8 8 12 0zm0 0c-4 8-2 16 4 16s12-8 8-16-8-8-12 0' fill='%234caf50' fill-opacity='0.05'/%3E%3C/svg%3E");
-  z-index: -1;
+.tree-container:hover {
+  transform: translateY(-2px);
+  border-color: var(--accent-color);
+}
+
+.coordinates {
+  background: var(--container-bg);
+  border-radius: 16px;
+  padding: 1.5rem;
+  margin-top: 2rem;
+  border: 1px solid var(--border-color);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+  backdrop-filter: blur(8px);
+}
+
+.coordinates h3 {
+  color: var(--accent-color);
+  font-size: 1.25rem;
+  margin-bottom: 1rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.coordinates h3::before {
+  content: '●';
+  color: var(--accent-color);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.3; }
+  100% { opacity: 1; }
+}
+
+.coordinates div {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 1.1rem;
+  color: var(--text-color);
+  opacity: 0.9;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 1rem;
+  border-radius: 8px;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(47, 72, 88, 0.2);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--accent-color);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #7FB292;
+}
+
+/* Add smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .content-wrapper {
+    flex-direction: column;
+  }
+  
+  .tree-container {
+    height: 300px;
+  }
 }
