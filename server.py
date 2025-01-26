@@ -42,5 +42,11 @@ def receive_data():
         print(f"Error: {e}")
         return jsonify({"action": "no_buzz"}), 500
 
+@app.route('/clear', methods=['POST'])
+def clear_coordinates():
+    global coordinate_history
+    coordinate_history = []
+    return jsonify({"message": "Coordinates cleared"})
+
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)  # Added debug=True for better error messages

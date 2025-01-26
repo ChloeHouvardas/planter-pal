@@ -5,6 +5,7 @@ import { MapleTree } from './components/MapleTree'
 import { Canvas } from '@react-three/fiber'
 import { LoadingScreen } from './components/LoadingScreen'
 import { MoneyTreeScene } from './components/MoneyTree'
+import { Notebook } from './components/Notebook'
 import './App.css'
 
 interface Coordinates {
@@ -26,19 +27,29 @@ function MainPage() {
   const navigate = useNavigate()
 
   useEffect(() => {
-    const fetchCoordinates = async () => {
-      try {
-        const response = await fetch('http://localhost:5000/coordinates')
-        const data = await response.json()
-        setCoordinates(data)
-      } catch (error) {
-        console.error('Error fetching coordinates:', error)
+    // Clear stored coordinates and server-side coordinates
+    localStorage.removeItem('finalCoordinates')
+    localStorage.removeItem('plantingHistory')
+    
+    // Clear server-side coordinates
+    fetch('http://localhost:5000/clear', {
+      method: 'POST',
+    }).then(() => {
+      // After clearing, start fetching new coordinates
+      const fetchCoordinates = async () => {
+        try {
+          const response = await fetch('http://localhost:5000/coordinates')
+          const data = await response.json()
+          setCoordinates(data)
+        } catch (error) {
+          console.error('Error fetching coordinates:', error)
+        }
       }
-    }
 
-    fetchCoordinates()
-    const interval = setInterval(fetchCoordinates, 1000)
-    return () => clearInterval(interval)
+      fetchCoordinates()
+      const interval = setInterval(fetchCoordinates, 1000)
+      return () => clearInterval(interval)
+    })
   }, [])
 
   const handleDone = () => {
@@ -56,7 +67,9 @@ function MainPage() {
 
   return (
     <div className="app">
-      <h1>CANOPY</h1>
+      <div className="logo-container">
+        <h1 className="logo-text">CANOPY</h1>
+      </div>
       <div className="content-wrapper">
         <div className="plot-container">
           <ScatterPlot coordinates={coordinates} />
@@ -79,9 +92,17 @@ function MainPage() {
           </div>
         )}
       </div>
-      <button className="done-button" onClick={handleDone}>
-        I'm Done!
-      </button>
+      <div className="button-group">
+        <button className="done-button" onClick={handleDone}>
+          I'm Done!
+        </button>
+        <button className="legacy-button" onClick={() => navigate('/legacy')}>
+          Tree Legacy
+        </button>
+        <button className="story-button" onClick={() => navigate('/story')}>
+          Story Tree
+        </button>
+      </div>
     </div>
   )
 }
@@ -145,6 +166,9 @@ function ResultsPage() {
         <button className="legacy-button" onClick={() => navigate('/legacy')}>
           Tree Legacy
         </button>
+        <button className="story-button" onClick={() => navigate('/story')}>
+          Story Tree
+        </button>
       </div>
     </div>
   )
@@ -158,6 +182,15 @@ function TreeLegacyPage() {
     const history = JSON.parse(localStorage.getItem('plantingHistory') || '[]')
     setPlantingHistory(history)
   }, [])
+
+  const handleDelete = (id: number) => {
+    // Filter out the deleted record
+    const newHistory = plantingHistory.filter(record => record.id !== id)
+    // Update local storage
+    localStorage.setItem('plantingHistory', JSON.stringify(newHistory))
+    // Update state
+    setPlantingHistory(newHistory)
+  }
   
   return (
     <div className="app legacy-page">
@@ -165,6 +198,18 @@ function TreeLegacyPage() {
       <div className="legacy-grid">
         {plantingHistory.map((record) => (
           <div key={record.id} className="legacy-card">
+            <div className="legacy-card-header">
+              <div className="legacy-timestamp">
+                {new Date(record.timestamp).toLocaleDateString()}
+              </div>
+              <button 
+                className="delete-button"
+                onClick={() => handleDelete(record.id)}
+                aria-label="Delete plant"
+              >
+                ×
+              </button>
+            </div>
             <div className="legacy-map">
               <div className="final-plot">
                 <ScatterPlot coordinates={record.coordinates} />
@@ -186,9 +231,6 @@ function TreeLegacyPage() {
                 </Canvas>
               </div>
             </div>
-            <div className="legacy-timestamp">
-              {new Date(record.timestamp).toLocaleDateString()}
-            </div>
           </div>
         ))}
         {plantingHistory.length === 0 && (
@@ -197,9 +239,47 @@ function TreeLegacyPage() {
           </div>
         )}
       </div>
-      <button className="back-button" onClick={() => navigate('/results')}>
-        Back to Results
-      </button>
+      <div className="button-group">
+        <button className="new-plant-button" onClick={() => navigate('/')}>
+          Start a New Plant!
+        </button>
+        <button className="back-button" onClick={() => navigate('/results')}>
+          Back to Results
+        </button>
+        <button className="story-button" onClick={() => navigate('/story')}>
+          Story Tree
+        </button>
+      </div>
+    </div>
+  )
+}
+
+function StoryTreePage() {
+  const navigate = useNavigate()
+
+  return (
+    <div className="app story-page">
+      <h1>Story Tree</h1>
+      <div className="notebook-wrapper">
+        <div className="notebook-container">
+          <Canvas camera={{ position: [0, 0, 10] }}>
+            <ambientLight intensity={0.7} />
+            <directionalLight position={[10, 10, 5]} intensity={1} />
+            <Notebook />
+          </Canvas>
+        </div>
+      </div>
+      <div className="button-group">
+        <button className="new-plant-button" onClick={() => navigate('/')}>
+          Start a New Plant!
+        </button>
+        <button className="legacy-button" onClick={() => navigate('/legacy')}>
+          Tree Legacy
+        </button>
+        <button className="back-button" onClick={() => navigate('/results')}>
+          Back to Results
+        </button>
+      </div>
     </div>
   )
 }
@@ -211,6 +291,7 @@ function App() {
         <Route path="/" element={<MainPage />} />
         <Route path="/results" element={<ResultsPage />} />
         <Route path="/legacy" element={<TreeLegacyPage />} />
+        <Route path="/story" element={<StoryTreePage />} />
       </Routes>
     </Router>
   )
